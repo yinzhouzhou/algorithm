@@ -1,0 +1,48 @@
+#
+# Copyright (c) 2018 Intel Corporation and others.  All rights reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this distribution,
+# and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+
+# sorted alphabetically
+
+# wildcard match
+**/logs
+**/target
+*.class
+*.iml
+*.ipr
+*.iws
+*.pyc
+*.swp
+*~
+
+# directory
+bin/
+etc/
+target-ide/
+
+# particular files
+.DS_Store
+.checkstyle
+.classpath
+.factorypath
+.fbExcludeFilterFile
+.idea
+.project
+.settings
+.vagrant
+dist
+log.html
+maven-metadata-local.xml
+output.xml
+products
+report.html
+repository
+target
+workspace
+yang-gen-config
+yang-gen-sal
+model/*/src/main/java
