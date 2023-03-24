@@ -2,11 +2,12 @@ package com.github.yinzhou.graph;
 
 import com.github.yinzhou.models.Edge;
 import com.github.yinzhou.models.Node;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
 
 
+@Data
 public class DirectedGraph {
     private int count = 1;
     private List<Node> nodes = new ArrayList<>();
@@ -17,46 +18,12 @@ public class DirectedGraph {
 
     private boolean solved = false;
 
-    public void setSolved(boolean solved) {
-        this.solved = solved;
-    }
-
-    public boolean isSolved() {
-        return solved;
-    }
-
-    public void setNodes(List<Node> nodes) {
-        this.nodes = nodes;
-    }
-
-    public List<Node> getNodes() {
-        return nodes;
-    }
-
-    public void setEdges(List<Edge> edges) {
-        this.edges = edges;
-    }
-
-    public List<Edge> getEdges() {
-        return edges;
-    }
-
     public boolean isNodeReachable(Node node) {
         for (Edge edge : edges)
-            if (node == edge.getOne() || node == edge.getTwo())
+            if (node == edge.getEndpoint1() || node == edge.getEndpoint2())
                 return true;
 
         return false;
-    }
-
-    public void setSource(Node node) {
-        if (nodes.contains(node))
-            source = node;
-    }
-
-    public void setDestination(Node node) {
-        if (nodes.contains(node))
-            destination = node;
     }
 
     public void addEdge(Edge new_edge) {

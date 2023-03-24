@@ -4,14 +4,14 @@ import lombok.Data;
 
 @Data
 public class Edge {
-    private final Node one;
-    private final Node two;
+    private final Node endpoint1;
+    private final Node endpoint2;
     private int weight = 1;
     private int originWeight = 1;
 
-    public Edge(Node one, Node two) {
-        this.one = one;
-        this.two = two;
+    public Edge(Node endpoint1, Node endpoint2) {
+        this.endpoint1 = endpoint1;
+        this.endpoint2 = endpoint2;
     }
 
     public void setWeightFirst(int weight) {
@@ -19,22 +19,20 @@ public class Edge {
         this.originWeight = weight;
     }
 
-    public int getOriginWeight() {
-        return originWeight;
-    }
-
     public boolean hasNode(Node node) {
-        return one == node || two == node;
+        return endpoint1 == node || endpoint2 == node;
     }
 
+    // 无向边比较
     public boolean equals(Edge edge) {
-        return (one == edge.one && two == edge.two) || (one == edge.two && two == edge.one);
+        return (endpoint1 == edge.endpoint1 && endpoint2 == edge.endpoint2)
+            || (endpoint1 == edge.endpoint2 && endpoint2 == edge.endpoint1);
     }
 
     @Override
     public String toString() {
         return "Edge ~ "
-            + getOne().getNodeId() + " - "
-            + getTwo().getNodeId();
+            + getEndpoint1().getNodeId() + " - "
+            + getEndpoint2().getNodeId();
     }
 }

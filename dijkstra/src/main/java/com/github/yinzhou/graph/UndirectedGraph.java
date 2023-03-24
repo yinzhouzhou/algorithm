@@ -19,7 +19,7 @@ public class UndirectedGraph {
 
     public boolean isNodeReachable(Node node) {
         for (Edge edge : edges) {
-            if (node == edge.getOne() || node == edge.getTwo())
+            if (node == edge.getEndpoint1() || node == edge.getEndpoint2())
                 return true;
         }
         return false;

@@ -195,17 +195,17 @@ public class DijkstraAlgorithm {
     }
 
     private Node getAdjacent(Edge edge, Node node) {
-        if (edge.getOne() != node && edge.getTwo() != node)
+        if (edge.getEndpoint1() != node && edge.getEndpoint2() != node)
             return null;
 
-        return node == edge.getTwo() ? edge.getOne() : edge.getTwo();
+        return node == edge.getEndpoint2() ? edge.getEndpoint1() : edge.getEndpoint2();
     }
 
     private List<Edge> getNeighbors(Node node) {
         List<Edge> neighbors = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
-            if (edge.getOne() == node || edge.getTwo() == node)
+            if (edge.getEndpoint1() == node || edge.getEndpoint2() == node)
                 neighbors.add(edge);
         }
 
