@@ -1,4 +1,4 @@
-package com.github.yinzhou.models;
+package com.github.yinzhou.dijkstra.models;
 
 import java.util.Iterator;
 import java.util.List;

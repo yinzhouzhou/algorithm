@@ -1,16 +1,18 @@
-package com.github.yinzhou.graph;
+package com.github.yinzhou.dijkstra.graph;
 
-import com.github.yinzhou.models.Edge;
-import com.github.yinzhou.models.Node;
+import com.github.yinzhou.dijkstra.models.Edge;
+import com.github.yinzhou.dijkstra.models.Node;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Data;
 
 @Data
-public class UndirectedGraph {
+public class Graph {
     private int count = 1;
-    private List<Node> nodes = new ArrayList<>();
-    private List<Edge> edges = new ArrayList<>();
+    private Set<Node> nodes = new HashSet<>();
+    private Set<Edge> edges = new HashSet<>();
 
     private Node source;
     private Node destination;
@@ -23,6 +25,26 @@ public class UndirectedGraph {
                 return true;
         }
         return false;
+    }
+
+    public Set<Edge> getNeighbors(Node node) {
+        Set<Edge> neighbors = new HashSet<>();
+
+        for (Edge edge : getEdges()) {
+            // 一个图的node指针是唯一的，这里可以使用==，也可以使用equals.
+            if (edge.getEndpoint1() == node || edge.getEndpoint2() == node)
+                neighbors.add(edge);
+        }
+
+        return neighbors;
+    }
+
+    public Node getAdjacent(Edge edge, Node node) {
+        if (edge.getEndpoint1() != node && edge.getEndpoint2() != node) {
+            return null;
+        }
+
+        return node == edge.getEndpoint2() ? edge.getEndpoint1() : edge.getEndpoint2();
     }
 
     public void setSource(Node node) {
@@ -41,16 +63,8 @@ public class UndirectedGraph {
         nodes.add(node);
     }
 
-    public void addEdge(Edge new_edge) {
-        boolean added = false;
-        for (Edge edge : edges) {
-            if (edge.equals(new_edge)) {
-                added = true;
-                break;
-            }
-        }
-        if (!added)
-            edges.add(new_edge);
+    public void addEdge(Edge newEdge) {
+        edges.add(newEdge);
     }
 
     public void deleteNode(Node node) {
@@ -75,5 +89,4 @@ public class UndirectedGraph {
         source = null;
         destination = null;
     }
-
 }

@@ -1,5 +1,6 @@
-package com.github.yinzhou.algo;
+package com.github.yinzhou.dijkstra.algo;
 
+import com.github.yinzhou.dijkstra.graph.Graph;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,15 +12,14 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
-import com.github.yinzhou.models.Edge;
-import com.github.yinzhou.models.Solution;
-import com.github.yinzhou.models.Node;
-import com.github.yinzhou.graph.UndirectedGraph;
+import com.github.yinzhou.dijkstra.models.Edge;
+import com.github.yinzhou.dijkstra.models.Solution;
+import com.github.yinzhou.dijkstra.models.Node;
 
 
 @SuppressWarnings("unused")
 public class DijkstraAlgorithm {
-    private final UndirectedGraph graph;
+    private final Graph graph;
 
     // 使用优先队列遍历，保证每次都是当前计算距离最小的元素先出列。比较方法: NodeComparator.
     // inProcess出列之后加入completed, completed表示已经锁定了最短路径结果的节点。
@@ -43,7 +43,7 @@ public class DijkstraAlgorithm {
         }
     }
 
-    public DijkstraAlgorithm(UndirectedGraph graph) {
+    public DijkstraAlgorithm(Graph graph) {
         this.graph = graph;
     }
 
@@ -69,8 +69,8 @@ public class DijkstraAlgorithm {
         distances.put(source, 0);
         completed.add(source);
 
-        for (Edge neighbor : getNeighbors(source)) {
-            Node adjacent = getAdjacent(neighbor, source);
+        for (Edge neighbor : graph.getNeighbors(source)) {
+            Node adjacent = graph.getAdjacent(neighbor, source);
             if (adjacent == null) {
                 continue;
             }
@@ -93,8 +93,8 @@ public class DijkstraAlgorithm {
 
             // 下一跳: 计算邻居的最短路径
             int distance = distances.get(current);
-            for (Edge neighbor : getNeighbors(current)) {
-                Node adjacent = getAdjacent(neighbor, current);
+            for (Edge neighbor : graph.getNeighbors(current)) {
+                Node adjacent = graph.getAdjacent(neighbor, current);
                 if (completed.contains(adjacent)) {
                     continue;
                 }
@@ -111,6 +111,14 @@ public class DijkstraAlgorithm {
         }
 
         graph.setSolved(true);
+    }
+
+    public Solution runAlgo() {
+        long start = System.currentTimeMillis();
+        this.run();
+        List<Node> shortestPath = getDestShortestPath();
+        Integer shortestDist = getDestinationDistance();
+        return new Solution(shortestPath, shortestDist, System.currentTimeMillis() - start);
     }
 
     // 包含策略: 使用分段计算方法解决包含策略。
@@ -133,7 +141,7 @@ public class DijkstraAlgorithm {
     public Solution runWithIncludeAndExcludePolicy(List<Node> includes, List<Node> excludes, Node dest) {
         Set<Edge> originExcludeEdges = new HashSet<>();
         for (Node exclude : excludes) {
-            List<Edge> neighbors = getNeighbors(exclude);
+            Set<Edge> neighbors = graph.getNeighbors(exclude);
             neighbors.forEach(edge -> edge.setWeight(BIG_NUMBER));
             originExcludeEdges.addAll(neighbors);
         }
@@ -173,9 +181,9 @@ public class DijkstraAlgorithm {
     // 包含：分段计算。 排斥：将边的权重置为无穷大
     public void runWithExcludePolicy(List<Node> excludes, Node dest, Set<Edge> excludeEdges) {
         // 将排斥的边权重置为"非常大", 后续统一计算最短路径所以要恢复权重
-        Map<Node, List<Edge>> originalEdges = new HashMap<>();
+        Map<Node, Set<Edge>> originalEdges = new HashMap<>();
         for (Node exclude : excludes) {
-            List<Edge> neighbors = getNeighbors(exclude);
+            Set<Edge> neighbors = graph.getNeighbors(exclude);
             originalEdges.put(exclude, neighbors);
             neighbors.forEach(edge -> edge.setWeight(BIG_NUMBER));
         }
@@ -185,31 +193,13 @@ public class DijkstraAlgorithm {
 
         // 恢复排除策略前的边权值, 如果是初始化排斥边则不恢复
         for (Node exclude : excludes) {
-            List<Edge> neighbors = originalEdges.get(exclude);
+            Set<Edge> neighbors = originalEdges.get(exclude);
             neighbors.forEach(edge -> {
                 if (!excludeEdges.contains(edge)) {
                     edge.setWeight(edge.getOriginWeight());
                 }
             });
         }
-    }
-
-    private Node getAdjacent(Edge edge, Node node) {
-        if (edge.getEndpoint1() != node && edge.getEndpoint2() != node)
-            return null;
-
-        return node == edge.getEndpoint2() ? edge.getEndpoint1() : edge.getEndpoint2();
-    }
-
-    private List<Edge> getNeighbors(Node node) {
-        List<Edge> neighbors = new ArrayList<>();
-
-        for (Edge edge : graph.getEdges()) {
-            if (edge.getEndpoint1() == node || edge.getEndpoint2() == node)
-                neighbors.add(edge);
-        }
-
-        return neighbors;
     }
 
     public Integer getDestinationDistance() {
