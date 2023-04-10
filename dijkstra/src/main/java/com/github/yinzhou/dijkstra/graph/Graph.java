@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Data;
 
 @Data
@@ -21,25 +22,21 @@ public class Graph {
 
     public boolean isNodeReachable(Node node) {
         for (Edge edge : edges) {
-            if (node == edge.getEndpoint1() || node == edge.getEndpoint2())
+            if (node == edge.getEndpoint1() || node == edge.getEndpoint2()) {
                 return true;
+            }
         }
         return false;
     }
 
     public Set<Edge> getNeighbors(Node node) {
-        Set<Edge> neighbors = new HashSet<>();
-
-        for (Edge edge : getEdges()) {
-            // 一个图的node指针是唯一的，这里可以使用==，也可以使用equals.
-            if (edge.getEndpoint1() == node || edge.getEndpoint2() == node)
-                neighbors.add(edge);
-        }
-
-        return neighbors;
+        // 一个图的node指针是唯一的，这里可以使用==，也可以使用equals.
+        return getEdges().stream()
+            .filter(edge -> edge.getEndpoint1() == node || edge.getEndpoint2() == node)
+            .collect(Collectors.toSet());
     }
 
-    public Node getAdjacent(Edge edge, Node node) {
+    public Node getAdjacentNode(Edge edge, Node node) {
         if (edge.getEndpoint1() != node && edge.getEndpoint2() != node) {
             return null;
         }
@@ -67,6 +64,7 @@ public class Graph {
         edges.add(newEdge);
     }
 
+    @SuppressWarnings("unused")
     public void deleteNode(Node node) {
         List<Edge> delete = new ArrayList<>();
         for (Edge edge : edges) {

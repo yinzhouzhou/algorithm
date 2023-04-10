@@ -4,27 +4,24 @@ import com.github.yinzhou.dijkstra.models.Edge;
 import com.github.yinzhou.dijkstra.models.Node;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Data;
 
 
-@Data
 public class DirectedGraph extends Graph {
 
     @Override
     public Set<Edge> getNeighbors(Node node) {
-        Set<Edge> neighbors = new HashSet<>();
-
-        for (Edge edge : getEdges()) {
-            if (edge.getEndpoint1() == node)
-                neighbors.add(edge);
-        }
-
-        return neighbors;
+        return getEdges().stream()
+            .filter(edge -> edge.getEndpoint1() == node)
+            .collect(Collectors.toSet());
     }
 
     @Override
-    public Node getAdjacent(Edge edge, Node node) {
-        assert edge.getEndpoint1() == node;
+    public Node getAdjacentNode(Edge edge, Node node) {
+        if (edge.getEndpoint1() != node) {
+            return null;
+        }
         return edge.getEndpoint2();
     }
 }

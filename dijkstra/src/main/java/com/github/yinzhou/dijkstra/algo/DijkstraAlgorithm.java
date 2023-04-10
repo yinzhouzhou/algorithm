@@ -70,7 +70,7 @@ public class DijkstraAlgorithm {
         completed.add(source);
 
         for (Edge neighbor : graph.getNeighbors(source)) {
-            Node adjacent = graph.getAdjacent(neighbor, source);
+            Node adjacent = graph.getAdjacentNode(neighbor, source);
             if (adjacent == null) {
                 continue;
             }
@@ -94,18 +94,18 @@ public class DijkstraAlgorithm {
             // 下一跳: 计算邻居的最短路径
             int distance = distances.get(current);
             for (Edge neighbor : graph.getNeighbors(current)) {
-                Node adjacent = graph.getAdjacent(neighbor, current);
-                if (completed.contains(adjacent)) {
+                Node node = graph.getAdjacentNode(neighbor, current);
+                if (node == null || completed.contains(node)) {
                     continue;
                 }
 
-                int currentDist = distances.get(adjacent);
+                int currentDist = distances.get(node);
                 int newDist = distance + neighbor.getWeight();
 
                 if (newDist < currentDist) {
-                    distances.put(adjacent, newDist);
-                    predecessors.put(adjacent, current);
-                    inProcess.add(adjacent);
+                    distances.put(node, newDist);
+                    predecessors.put(node, current);
+                    inProcess.add(node);
                 }
             }
         }
@@ -113,15 +113,14 @@ public class DijkstraAlgorithm {
         graph.setSolved(true);
     }
 
+    // 无策略
     public Solution runAlgo() {
         long start = System.currentTimeMillis();
         this.run();
-        List<Node> shortestPath = getDestShortestPath();
-        Integer shortestDist = getDestinationDistance();
-        return new Solution(shortestPath, shortestDist, System.currentTimeMillis() - start);
+        return new Solution(getDestShortestPath(), getDestinationDistance(), System.currentTimeMillis() - start);
     }
 
-    // 包含策略: 使用分段计算方法解决包含策略。
+    // 带包含策略: 使用分段计算方法解决包含策略。
     public Solution runWithIncludePolicy(List<Node> includes, Node dest) {
         List<Node> shortestPath = new ArrayList<>();
         Integer shortestDist = 0;
@@ -138,13 +137,24 @@ public class DijkstraAlgorithm {
         return new Solution(shortestPath, shortestDist, System.currentTimeMillis() - start);
     }
 
-    public Solution runWithIncludeAndExcludePolicy(List<Node> includes, List<Node> excludes, Node dest) {
+    // 带包含排斥策略, 包含要注意排序，外面排好序传入
+    public Solution runWithIncludeAndExcludePolicy(List<Node> includes,
+                                                   List<Edge> includeEdges,
+                                                   List<Node> excludes,
+                                                   List<Edge> excludeEdges,
+                                                   Node dest) {
+        Node originSource = graph.getSource();
         Set<Edge> originExcludeEdges = new HashSet<>();
         for (Node exclude : excludes) {
             Set<Edge> neighbors = graph.getNeighbors(exclude);
             neighbors.forEach(edge -> edge.setWeight(BIG_NUMBER));
             originExcludeEdges.addAll(neighbors);
         }
+        includeEdges.forEach(edge -> edge.setWeight(0));
+        originExcludeEdges.addAll(includeEdges);
+        excludeEdges.forEach(edge -> edge.setWeight(BIG_NUMBER));
+        originExcludeEdges.addAll(excludeEdges);
+
         List<Node> shortestPath = new ArrayList<>();
         Integer shortestDist = 0;
         Node preInclude = null;
@@ -157,6 +167,8 @@ public class DijkstraAlgorithm {
         }
         // 计算最后一段
         shortestDist += calculateSegment(dest, preInclude, shortestPath, originExcludeEdges);
+        // 还原源节点(非必要)
+        graph.setSource(originSource);
         return new Solution(shortestPath, shortestDist, System.currentTimeMillis() - start);
     }
 
@@ -167,7 +179,7 @@ public class DijkstraAlgorithm {
         List<Node> needExcludes = shortestPath.stream()
             .filter(exclude -> !Objects.equals(exclude, graph.getSource()))
             .collect(Collectors.toList());
-        runWithExcludePolicy(needExcludes, dest, excludeEdges);
+        runWithExcludePolicy(needExcludes, excludeEdges);
         // 拼接路径
         List<Node> currentSegmentSPath = getDestShortestPath();
         if (preInclude != null) {
@@ -178,21 +190,20 @@ public class DijkstraAlgorithm {
         return getDestinationDistance();
     }
 
-    // 包含：分段计算。 排斥：将边的权重置为无穷大
-    public void runWithExcludePolicy(List<Node> excludes, Node dest, Set<Edge> excludeEdges) {
+    // 带排斥策略：将边的权重置为无穷大,计算完成后需要还原权重
+    public void runWithExcludePolicy(List<Node> excludeNodes, Set<Edge> excludeEdges) {
         // 将排斥的边权重置为"非常大", 后续统一计算最短路径所以要恢复权重
         Map<Node, Set<Edge>> originalEdges = new HashMap<>();
-        for (Node exclude : excludes) {
+        for (Node exclude : excludeNodes) {
             Set<Edge> neighbors = graph.getNeighbors(exclude);
             originalEdges.put(exclude, neighbors);
             neighbors.forEach(edge -> edge.setWeight(BIG_NUMBER));
         }
-        graph.setDestination(dest);
 
         this.run();
 
         // 恢复排除策略前的边权值, 如果是初始化排斥边则不恢复
-        for (Node exclude : excludes) {
+        for (Node exclude : excludeNodes) {
             Set<Edge> neighbors = originalEdges.get(exclude);
             neighbors.forEach(edge -> {
                 if (!excludeEdges.contains(edge)) {

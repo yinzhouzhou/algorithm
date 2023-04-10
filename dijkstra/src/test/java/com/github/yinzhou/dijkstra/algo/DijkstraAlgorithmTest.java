@@ -8,6 +8,8 @@ import com.github.yinzhou.dijkstra.models.Edge;
 import com.github.yinzhou.dijkstra.models.Node;
 import com.github.yinzhou.dijkstra.models.Solution;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,10 +32,52 @@ public class DijkstraAlgorithmTest {
             Solution solution = dijkstraAlgorithm.runWithIncludeAndExcludePolicy(
                 Arrays.asList(graph.getNodes().stream()
                     .filter(node -> node.getNodeId().equals("v5")).findFirst().get()),
+                Collections.emptyList(),
                 Arrays.asList(graph.getNodes().stream()
                     .filter(node -> node.getNodeId().equals("v4")).findFirst().get()),
+                Collections.emptyList(),
                 graph.getDestination());
             System.out.println(solution);
+
+            Solution solution2 = dijkstraAlgorithm.runWithIncludeAndExcludePolicy(
+                Arrays.asList(graph.getNodes().stream()
+                    .filter(node -> node.getNodeId().equals("v5")).findFirst().get()),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Arrays.asList(graph.getEdges().stream()
+                    .filter(edge -> edge.getEndpoint1().getNodeId().equals("v6")
+                        && edge.getEndpoint2().getNodeId().equals("v5"))
+                    .findFirst().get()),
+                graph.getDestination());
+            System.out.println(solution2);
+        } catch (IllegalStateException ise) {
+            ise.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testUndirectedGraph2() {
+        Graph graph = new Graph();
+        initUndirectedGraph(graph);
+        graph.setSource(graph.getNodes().stream()
+            .filter(node -> node.getNodeId().equals("v1")).findFirst().get());
+        graph.setDestination(graph.getNodes().stream()
+            .filter(node -> node.getNodeId().equals("v3")).findFirst().get());
+        DijkstraAlgorithm dijkstraAlgorithm = new DijkstraAlgorithm(graph);
+        try {
+            List<Node> includeNodes = Arrays.asList(graph.getNodes().stream()
+                .filter(node -> node.getNodeId().equals("v5")).findFirst().get());
+            List<Edge> excludeEdges = Arrays.asList(graph.getEdges().stream()
+                .filter(edge -> edge.getEndpoint1().getNodeId().equals("v6")
+                    && edge.getEndpoint2().getNodeId().equals("v5"))
+                .findFirst().get());
+            Solution solution2 = dijkstraAlgorithm.runWithIncludeAndExcludePolicy(
+                includeNodes,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                excludeEdges,
+                graph.getDestination());
+            System.out.println(solution2);
         } catch (IllegalStateException ise) {
             ise.printStackTrace();
         }
@@ -72,25 +116,25 @@ public class DijkstraAlgorithmTest {
         graph.addNode(v5);
         graph.addNode(v6);
         Edge edge16 = new Edge(v1, v6);
-        edge16.setWeightFirst(2);
+        edge16.setWeightFirst(3);
         Edge edge12 = new Edge(v1, v2);
-        edge12.setWeightFirst(4);
+        edge12.setWeightFirst(10);
         Edge edge26 = new Edge(v2, v6);
-        edge26.setWeightFirst(3);
+        edge26.setWeightFirst(2);
         Edge edge65 = new Edge(v6, v5);
-        edge65.setWeightFirst(3);
+        edge65.setWeightFirst(1);
         Edge edge25 = new Edge(v2, v5);
         edge25.setWeightFirst(1);
         Edge edge64 = new Edge(v6, v4);
         edge64.setWeightFirst(6);
         Edge edge24 = new Edge(v2, v4);
-        edge24.setWeightFirst(1);
+        edge24.setWeightFirst(5);
         Edge edge54 = new Edge(v5, v4);
-        edge54.setWeightFirst(5);
+        edge54.setWeightFirst(7);
         Edge edge23 = new Edge(v2, v3);
-        edge23.setWeightFirst(6);
+        edge23.setWeightFirst(7);
         Edge edge43 = new Edge(v4, v3);
-        edge43.setWeightFirst(3);
+        edge43.setWeightFirst(4);
         graph.addEdge(edge16);
         graph.addEdge(edge12);
         graph.addEdge(edge26);
